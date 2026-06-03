@@ -1,0 +1,429 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{caption}
+
+\hypersetup{
+colorlinks=true,
+linkcolor=blue,
+urlcolor=blue,
+citecolor=blue
+}
+
+\title{
+\textbf{Cloud Computing Project}\
+Option 2: Serverless Image Processing Application on AWS Lambda
+}
+
+\author{
+Name 1 \
+Name 2 \
+Name 3
+}
+
+\date{June 2026}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TITLE PAGE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\maketitle
+
+\begin{center}
+University of Rome Tor Vergata\
+Cloud Computing Course
+\end{center}
+
+\vspace{1cm}
+
+\begin{abstract}
+
+This report presents the design, implementation, deployment, and performance evaluation of a serverless image processing application developed using Amazon Web Services (AWS). The application allows users to upload images through a REST API and perform image processing operations using AWS Lambda functions. The deployment uses API Gateway, Lambda, Amazon S3, and CloudWatch services.
+
+The main objective of the project is to evaluate the scalability and performance of serverless computing under different workload conditions. Experimental tests were conducted using varying numbers of concurrent users and requests. Metrics including response time, throughput, invocation count, execution duration, concurrency level, and error rate were collected and analyzed.
+
+The obtained results demonstrate the ability of AWS Lambda to automatically scale according to workload intensity while maintaining acceptable performance levels. A cost analysis is also presented and compared with alternative deployment solutions.
+
+\end{abstract}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% INTRODUCTION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+\subsection{Project Objectives}
+
+The objective of this project is to:
+
+\begin{itemize}
+\item Develop a serverless image processing application.
+\item Deploy the application using AWS Lambda.
+\item Evaluate performance under different workload conditions.
+\item Analyze scalability characteristics of serverless computing.
+\item Estimate operational costs and compare alternative deployment strategies.
+\end{itemize}
+
+\subsection{Project Scope}
+
+The developed application supports:
+
+\begin{itemize}
+\item Image upload through REST APIs.
+\item Storage of images in Amazon S3.
+\item Image resizing operations.
+\item Monitoring through CloudWatch.
+\item Experimental performance evaluation.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SYSTEM DESIGN
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{System Design}
+
+\subsection{Overall Architecture}
+
+Figure \ref{fig:architecture} presents the overall architecture of the proposed solution.
+
+% architecture image
+
+The workflow is summarized as follows:
+
+\begin{enumerate}
+\item User uploads an image.
+\item API Gateway receives the request.
+\item Lambda function processes the request.
+\item Image is stored in Amazon S3.
+\item Processed image is returned to the user.
+\end{enumerate}
+
+\subsection{AWS Components}
+
+\subsubsection{API Gateway}
+
+API Gateway exposes REST endpoints used to upload and process images.
+
+\subsubsection{AWS Lambda}
+
+Lambda functions execute image processing operations without requiring dedicated servers.
+
+\subsubsection{Amazon S3}
+
+S3 stores both input and processed images.
+
+\subsubsection{CloudWatch}
+
+CloudWatch is used to collect monitoring and performance metrics during experimental testing.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% IMPLEMENTATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Implementation}
+
+\subsection{Upload Service}
+
+The upload endpoint receives an image encoded in Base64 format and stores it in Amazon S3.
+
+\subsubsection*{Endpoint}
+
+\begin{verbatim}
+/upload-base64
+\end{verbatim}
+
+\subsubsection*{Example Request}
+
+\begin{verbatim}
+{
+"filename": "test.jpg",
+"folder": "small",
+"content_type": "image/jpeg",
+"image_base64": "..."
+}
+\end{verbatim}
+
+\subsection{Processing Service}
+
+The processing endpoint performs image resizing operations.
+
+\subsubsection*{Endpoint}
+
+\begin{verbatim}
+/process
+\end{verbatim}
+
+\subsubsection*{Example Request}
+
+\begin{verbatim}
+{
+"bucket": "bucket-name",
+"key": "image.jpg",
+"operation": "resize",
+"width": 256,
+"height": 256
+}
+\end{verbatim}
+
+\subsection{Deployment}
+
+The application was deployed within the AWS environment using:
+
+\begin{itemize}
+\item API Gateway
+\item AWS Lambda
+\item Amazon S3
+\item CloudWatch
+\end{itemize}
+
+Deployment configuration parameters are summarized in Table \ref{tab:deployment}.
+
+\begin{table}[H]
+\centering
+\caption{Deployment Configuration}
+\label{tab:deployment}
+\begin{tabular}{ll}
+\toprule
+Parameter & Value \
+\midrule
+Lambda Runtime & TBD \
+Memory Allocation & TBD \
+Timeout & TBD \
+Region & TBD \
+\bottomrule
+\end{tabular}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EXPERIMENTAL METHODOLOGY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experimental Methodology}
+
+\subsection{Evaluation Objectives}
+
+The evaluation focuses on the following metrics:
+
+\begin{itemize}
+\item Response Time
+\item Throughput
+\item Scalability
+\item Concurrent Executions
+\item Error Rate
+\end{itemize}
+
+\subsection{Workload Scenarios}
+
+Four workload levels were considered.
+
+\begin{table}[H]
+\centering
+\caption{Workload Scenarios}
+\label{tab:workloads}
+\begin{tabular}{cc}
+\toprule
+Scenario & Concurrent Users \
+\midrule
+Small & 10 \
+Medium & 50 \
+Heavy & 100 \
+Stress & Until saturation \
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Testing Tools}
+
+The following tools were used:
+
+\begin{itemize}
+\item Apache JMeter
+\item AWS CloudWatch
+\item Postman
+\end{itemize}
+
+\subsection{Metrics Collected}
+
+\begin{itemize}
+\item Average Response Time
+\item Throughput
+\item Concurrent Executions
+\item Lambda Duration
+\item Invocation Count
+\item Error Rate
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RESULTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experimental Results}
+
+\subsection{Response Time Analysis}
+
+Figure \ref{fig:response_time} shows the relationship between workload intensity and response time.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{response_time.png}
+\caption{Response Time vs Concurrent Users}
+\label{fig:response_time}
+\end{figure}
+
+Discussion of observed trends goes here.
+
+\subsection{Throughput Analysis}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{throughput.png}
+\caption{Throughput vs Concurrent Users}
+\label{fig:throughput}
+\end{figure}
+
+Discussion of throughput behavior goes here.
+
+\subsection{Concurrency Analysis}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{concurrency.png}
+\caption{Concurrent Lambda Executions}
+\label{fig:concurrency}
+\end{figure}
+
+CloudWatch observations and discussion go here.
+
+\subsection{Scalability Evaluation}
+
+This section discusses:
+
+\begin{itemize}
+\item Automatic scaling behavior.
+\item Maximum observed concurrency.
+\item Performance bottlenecks.
+\item Resource utilization.
+\end{itemize}
+
+\subsection{Error Analysis}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{errors.png}
+\caption{Error Rate vs Concurrent Users}
+\label{fig:errorrate}
+\end{figure}
+
+Discussion of system reliability under load.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% COST EVALUATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Cost Evaluation}
+
+\subsection{AWS Lambda Cost Estimation}
+
+A six-month operational cost estimate is provided.
+
+\begin{table}[H]
+\centering
+\caption{Estimated Operational Cost}
+\label{tab:cost}
+\begin{tabular}{lcc}
+\toprule
+Component & Monthly Cost & 6-Month Cost \
+\midrule
+Lambda & TBD & TBD \
+API Gateway & TBD & TBD \
+S3 Storage & TBD & TBD \
+CloudWatch & TBD & TBD \
+\midrule
+Total & TBD & TBD \
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Alternative Deployment Comparison}
+
+The proposed serverless solution is compared with an EC2-based deployment.
+
+\begin{table}[H]
+\centering
+\caption{Deployment Comparison}
+\label{tab:comparison}
+\begin{tabular}{lcc}
+\toprule
+Metric & Lambda & EC2 \
+\midrule
+Cost & TBD & TBD \
+Scalability & TBD & TBD \
+Management Effort & TBD & TBD \
+Availability & TBD & TBD \
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Discussion}
+
+Advantages and disadvantages of both approaches are discussed in this section.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% DISCUSSION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Discussion}
+
+The experimental results indicate:
+
+\begin{itemize}
+\item Whether the system scales effectively.
+\item The workload levels at which degradation begins.
+\item The effectiveness of serverless deployment.
+\item Observed limitations and bottlenecks.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CONCLUSION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion}
+
+This project demonstrated the deployment of a serverless image processing application using AWS Lambda. Experimental evaluation showed how the system behaves under increasing workload intensity and highlighted the scalability characteristics of serverless computing. The results collected through CloudWatch and JMeter provide quantitative evidence of system performance. Finally, cost analysis demonstrated the economic implications of adopting a serverless architecture compared to traditional deployment solutions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% REFERENCES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{thebibliography}{9}
+
+\bibitem{aws}
+Amazon Web Services Documentation.
+\url{https://docs.aws.amazon.com}
+
+\bibitem{jmeter}
+Apache JMeter Documentation.
+\url{https://jmeter.apache.org}
+
+\bibitem{course}
+Cloud Computing Course Material.
+
+\end{thebibliography}
+
+\end{document}
