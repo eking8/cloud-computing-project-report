@@ -112,17 +112,16 @@ The objectives of this project are:
 
 \subsection{Project Scope}
 
-[LUIS: I made some changes to the text below, can you check that it's correct?]
-The developed application provides a simple image processing workflow consisting of image upload, storage, and resizing operations. 
-Users interact with the system through HTTP endpoints exposed by Amazon API Gateway. 
-Uploaded images are stored in Amazon S3, while image processing tasks are executed by AWS Lambda functions.
+
+The developed application provides a simple image processing workflow consisting of image storage and resizing operations. 
+Users interact with the system through an HTTP endpoint exposed by Amazon API Gateway to trigger image processing requests. 
+Input images are stored in Amazon S3, while image processing tasks are executed by AWS Lambda functions.
 
 The scope of the project includes:
 
-[LUIS: Here also changes]
 \begin{itemize}
-\item Image upload through HTTP API endpoints.
 \item Image storage using Amazon S3.
+\item Image processing requests through an HTTP API endpoint.
 \item Image resizing operations executed by AWS Lambda.
 \item Monitoring and metric collection through Amazon CloudWatch.
 \item Experimental performance and scalability evaluation.
@@ -151,7 +150,7 @@ The performance evaluation addresses the following research questions:
 \item Does the deployment maintain reliable operation under sustained and burst workloads?
 \end{itemize}
 
-[LUIS&JUAN: Do we have all of the metrics below?]
+
 The evaluation considers both user-oriented and system-oriented performance metrics. 
 User-oriented metrics include response time, throughput, availability, and error rate, measured primarily from the client side using Apache JMeter. 
 System-oriented metrics include Lambda invocation count, execution duration, concurrent executions, errors, throttling behaviour, and overall scalability characteristics, collected through Amazon CloudWatch.
