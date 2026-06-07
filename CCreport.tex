@@ -86,17 +86,15 @@ provisioned for peak demand, resulting in underutilised infrastructure during pe
 In contrast, serverless deployments dynamically allocate resources according to demand, potentially 
 reducing operational costs while maintaining acceptable performance levels.
 
-[LUIS: Can you make sure this is right? I think it's correct but I want to be sure]
+]
+[LUIS: I made some changes to the text below, can you check that it's correct?]
 This project investigates the deployment of a serverless image processing application using AWS cloud services. 
-The application enables users to upload images through a REST API, store them within Amazon S3, and perform 
-image resizing operations using AWS Lambda functions. The deployment integrates API Gateway, AWS Lambda, 
-Amazon S3, and Amazon CloudWatch to provide a scalable and observable cloud-native architecture.
+The application enables users to upload images through an HTTP API, store them in Amazon S3, and perform image resizing operations using AWS Lambda functions. 
+The deployment integrates Amazon API Gateway, AWS Lambda, Amazon S3, and Amazon CloudWatch to provide a scalable and observable cloud-native architecture.
 
-[LUIS: same here]
-The primary focus of the project is not the image processing functionality itself but rather the 
-evaluation of the performance and scalability characteristics of the serverless deployment. Experimental 
-testing was conducted under varying workload conditions to determine how effectively the system scales in 
-response to increasing demand and to identify any performance limitations or bottlenecks.
+[LUIS: ALso check the text below, I made some changes to it]
+The primary focus of the project is not the image processing functionality itself, but rather the evaluation of the performance and scalability characteristics of the serverless deployment. 
+Experimental testing was conducted under varying workload conditions to determine how effectively the system scales in response to increasing demand and to identify potential performance limitations or bottlenecks.
 
 \subsection{Project Objectives}
 
@@ -113,35 +111,32 @@ The objectives of this project are:
 
 \subsection{Project Scope}
 
-[LUIS: Can you make sure this is right? I think it's correct but I want to be sure]
-The developed application provides a simple image processing workflow consisting of image upload, storage, 
-and resizing operations. Users interact with the system through REST endpoints exposed by AWS API Gateway. 
-Uploaded images are stored within Amazon S3, while image processing tasks are executed by AWS Lambda functions.
+[LUIS: I made some changes to the text below, can you check that it's correct?]
+The developed application provides a simple image processing workflow consisting of image upload, storage, and resizing operations. 
+Users interact with the system through HTTP endpoints exposed by Amazon API Gateway. 
+Uploaded images are stored in Amazon S3, while image processing tasks are executed by AWS Lambda functions.
 
 The scope of the project includes:
 
-[LUIS: same here]
+[LUIS: Here also changes]
 \begin{itemize}
-\item Image upload through REST API endpoints.
+\item Image upload through HTTP API endpoints.
 \item Image storage using Amazon S3.
 \item Image resizing operations executed by AWS Lambda.
 \item Monitoring and metric collection through Amazon CloudWatch.
 \item Experimental performance and scalability evaluation.
 \end{itemize}
 
-The project does not focus on advanced image analysis, machine learning functionality, or front-end application 
-development. Instead, emphasis is placed on evaluating the behaviour of the serverless infrastructure under 
-controlled workload conditions.
+
+The project does not focus on advanced image analysis, machine learning functionality, or front-end application development.
+ Instead, the emphasis is placed on evaluating the behaviour of the serverless infrastructure under controlled workload conditions.
 
 \subsection{Purpose and Scope of the Evaluation}
 
-The purpose of the performance evaluation is to assess the scalability, responsiveness, and reliability of the 
-proposed serverless image processing application under different workload conditions.
+The purpose of the performance evaluation is to assess the scalability, responsiveness, and reliability of the proposed serverless image processing application under different workload conditions.
 
-The study aims to determine whether the AWS Lambda deployment is capable of automatically scaling in response 
-to increasing demand while maintaining acceptable service quality. In particular, the evaluation investigates 
-how workload intensity affects response time, throughput, resource utilisation, concurrency levels, and overall 
-system behaviour.
+The study aims to determine whether the AWS Lambda-based deployment is capable of automatically scaling in response to increasing demand while maintaining an acceptable level of service. 
+In particular, the evaluation investigates how workload intensity affects response time, throughput, concurrency levels, and overall system behaviour.
 
 The performance evaluation addresses the following research questions:
 
@@ -175,8 +170,33 @@ integration between storage, processing, and monitoring components.
 
 Figure \ref{fig:architecture} illustrates the overall system architecture.
 
-[LOUIS OR JUAN: If you describe in words what the architecture looks like I can make a nice looking flow chart. 
-Below is what chat GPT generated. Maybe just check this and conform that it's correct?]
+[LOUIS OR JUAN:
+The system follows a serverless architecture based on Amazon API Gateway, AWS Lambda, Amazon S3, and Amazon CloudWatch. Users interact with the application through HTTP endpoints exposed by Amazon API Gateway. When a processing request is received, API Gateway invokes an AWS Lambda function that retrieves the input image from an Amazon S3 input bucket, performs the requested image transformation, and stores the processed image in an Amazon S3 output bucket. Amazon CloudWatch is used to collect logs and monitoring metrics such as invocations, duration, concurrency, errors, and throttles. This architecture enables automatic scaling, low operational overhead, and easy monitoring under different workload conditions.
+
+
+
+The architecture also includes an optional upload workflow. Through the /upload-base64 endpoint, users can send an image encoded in Base64 to API Gateway, which triggers a Lambda function that stores the image in the S3 input bucket. Afterwards, the /process endpoint triggers the image-processing Lambda function, which reads the uploaded image from the input bucket, applies the requested transformation, and stores the result in the output bucket.
+
+Short flow version for your teammate’s diagram
+Client sends HTTP request to Amazon API Gateway
+API Gateway invokes AWS Lambda
+Lambda reads image from Amazon S3 input bucket
+Lambda processes image
+Lambda stores result in Amazon S3 output bucket
+Amazon CloudWatch collects logs and metrics
+If your teammate wants boxes and arrows
+
+You can tell him this:
+
+Client → API Gateway → Lambda → S3 Input / S3 Output → CloudWatch
+
+More precisely:
+
+Client → API Gateway
+API Gateway → Lambda
+Lambda → S3 Input Bucket (read image)
+Lambda → S3 Output Bucket (write processed image)
+Lambda / API Gateway → CloudWatch (logs and metrics)]
 
 The image processing workflow consists of the following steps:
 
