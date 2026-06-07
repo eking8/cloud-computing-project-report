@@ -28,8 +28,8 @@ Option 2: Serverless Image Processing Application on AWS Lambda
 }
 
 \author{
-Luis LAST NAME \
-Juan LAST NAME \
+Luis Sanchez \
+Juan Garcia \
 Edward King
 }
 
@@ -52,6 +52,8 @@ Cloud Computing
 
 \begin{abstract}
 
+[EDDIE: Update abstract after completing the report]
+
 This report presents the design, implementation, deployment, and performance evaluation of a serverless image processing application developed using Amazon Web Services (AWS). The application allows users to upload images through a REST API and perform image processing operations using AWS Lambda functions. The deployment uses API Gateway, Lambda, Amazon S3, and CloudWatch services.
 
 The main objective of the project is to evaluate the scalability and performance of serverless computing under different workload conditions. Experimental tests were conducted using varying numbers of concurrent users and requests. Metrics including response time, throughput, invocation count, execution duration, concurrency level, and error rate were collected and analyzed.
@@ -69,72 +71,204 @@ The obtained results demonstrate the ability of AWS Lambda to automatically scal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % INTRODUCTION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \section{Introduction}
+
+Cloud computing has become a fundamental paradigm for deploying scalable and cost-effective applications. 
+Among the various cloud service models, serverless computing has gained significant attention due to its 
+ability to automatically allocate resources according to workload demands while eliminating the need for 
+infrastructure management. Amazon Web Services (AWS) Lambda is one of the most widely adopted serverless 
+platforms, enabling developers to execute application logic without provisioning or maintaining servers.
+
+[EDDIE: Probably have to add some references here]
+Image processing applications represent a suitable use case for serverless architectures because workloads 
+can fluctuate considerably over time. Traditional server-based deployments often require resources to be 
+provisioned for peak demand, resulting in underutilised infrastructure during periods of low activity. 
+In contrast, serverless deployments dynamically allocate resources according to demand, potentially 
+reducing operational costs while maintaining acceptable performance levels.
+
+[LUIS: Can you make sure this is right? I think it's correct but I want to be sure]
+This project investigates the deployment of a serverless image processing application using AWS cloud services. 
+The application enables users to upload images through a REST API, store them within Amazon S3, and perform 
+image resizing operations using AWS Lambda functions. The deployment integrates API Gateway, AWS Lambda, 
+Amazon S3, and Amazon CloudWatch to provide a scalable and observable cloud-native architecture.
+
+[LUIS: same here]
+The primary focus of the project is not the image processing functionality itself but rather the 
+evaluation of the performance and scalability characteristics of the serverless deployment. Experimental 
+testing was conducted under varying workload conditions to determine how effectively the system scales in 
+response to increasing demand and to identify any performance limitations or bottlenecks.
 
 \subsection{Project Objectives}
 
-The objective of this project is to:
+The objectives of this project are:
 
 \begin{itemize}
-\item Develop a serverless image processing application.
-\item Deploy the application using AWS Lambda.
-\item Evaluate performance under different workload conditions.
-\item Analyze scalability characteristics of serverless computing.
-\item Estimate operational costs and compare alternative deployment strategies.
+\item To design and implement a serverless image processing application using AWS services.
+\item To deploy the application using AWS Lambda and API Gateway.
+\item To evaluate the performance of the deployment under different workload conditions.
+\item To analyse the scalability characteristics of serverless computing.
+\item To investigate the relationship between workload intensity and resource utilisation.
+\item To estimate the operational cost of the deployment and compare it with an alternative cloud deployment model.
 \end{itemize}
 
 \subsection{Project Scope}
 
-The developed application supports:
+[LUIS: Can you make sure this is right? I think it's correct but I want to be sure]
+The developed application provides a simple image processing workflow consisting of image upload, storage, 
+and resizing operations. Users interact with the system through REST endpoints exposed by AWS API Gateway. 
+Uploaded images are stored within Amazon S3, while image processing tasks are executed by AWS Lambda functions.
 
+The scope of the project includes:
+
+[LUIS: same here]
 \begin{itemize}
-\item Image upload through REST APIs.
-\item Storage of images in Amazon S3.
-\item Image resizing operations.
-\item Monitoring through CloudWatch.
-\item Experimental performance evaluation.
+\item Image upload through REST API endpoints.
+\item Image storage using Amazon S3.
+\item Image resizing operations executed by AWS Lambda.
+\item Monitoring and metric collection through Amazon CloudWatch.
+\item Experimental performance and scalability evaluation.
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SYSTEM DESIGN
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The project does not focus on advanced image analysis, machine learning functionality, or front-end application 
+development. Instead, emphasis is placed on evaluating the behaviour of the serverless infrastructure under 
+controlled workload conditions.
+
+\subsection{Purpose and Scope of the Evaluation}
+
+The purpose of the performance evaluation is to assess the scalability, responsiveness, and reliability of the 
+proposed serverless image processing application under different workload conditions.
+
+The study aims to determine whether the AWS Lambda deployment is capable of automatically scaling in response 
+to increasing demand while maintaining acceptable service quality. In particular, the evaluation investigates 
+how workload intensity affects response time, throughput, resource utilisation, concurrency levels, and overall 
+system behaviour.
+
+The performance evaluation addresses the following research questions:
+
+[EDDIE: Check that these questions have been answered in the report]
+\begin{itemize}
+\item Does the application scale effectively as workload intensity increases?
+\item How does response time vary under different levels of concurrency?
+\item What throughput can be achieved under increasing load?
+\item How many concurrent Lambda executions are required to maintain performance?
+\item Are there any observable bottlenecks within the processing workflow?
+\item Does the deployment maintain reliable operation under sustained and burst workloads?
+\end{itemize}
+
+[LUIS&JUAN: Do we have all of the metrics below?]
+The evaluation considers both user-oriented and system-oriented performance metrics. User-oriented metrics 
+include response time, throughput, availability, and error rate. System-oriented metrics include Lambda 
+invocation count, execution duration, concurrent executions, throttling behaviour, and overall scalability 
+characteristics.
+
+Experimental data were collected using Amazon CloudWatch and the selected load generation tools. The resulting 
+measurements provide quantitative evidence regarding the performance and scalability of the serverless 
+deployment and support the conclusions presented later in this report.
 
 \section{System Design}
 
 \subsection{Overall Architecture}
 
-Figure \ref{fig:architecture} presents the overall architecture of the proposed solution.
+The proposed solution follows a serverless architecture built entirely using managed AWS services. 
+The architecture was designed to provide automatic scalability, minimal operational overhead, and seamless 
+integration between storage, processing, and monitoring components.
 
-% architecture image
+Figure \ref{fig:architecture} illustrates the overall system architecture.
 
-The workflow is summarized as follows:
+[LOUIS OR JUAN: If you describe in words what the architecture looks like I can make a nice looking flow chart. 
+Below is what chat GPT generated. Maybe just check this and conform that it's correct?]
+
+The image processing workflow consists of the following steps:
 
 \begin{enumerate}
-\item User uploads an image.
-\item API Gateway receives the request.
-\item Lambda function processes the request.
-\item Image is stored in Amazon S3.
-\item Processed image is returned to the user.
+\item A client submits an image processing request through a REST API endpoint.
+\item AWS API Gateway receives the request and performs request routing.
+\item The request is forwarded to an AWS Lambda function responsible for image processing.
+\item The Lambda function retrieves or receives the image data and performs the required resizing operation.
+\item Input and processed images are stored within Amazon S3.
+\item The processed image or processing result is returned to the client through API Gateway.
+\item Amazon CloudWatch continuously records operational and performance metrics generated during execution.
 \end{enumerate}
+
+[EDDIE: Once that flow diagram is made make sure the paragraph below makes sense]
+This architecture eliminates the need to provision or manage virtual machines while allowing resources to scale automatically in response to workload fluctuations.
 
 \subsection{AWS Components}
 
+The deployment relies on four primary AWS services: API Gateway, AWS Lambda, Amazon S3, and Amazon CloudWatch. Together, these services provide the functionality required to implement, operate, and evaluate the serverless image processing application.
+
 \subsubsection{API Gateway}
 
-API Gateway exposes REST endpoints used to upload and process images.
+Amazon API Gateway provides the external interface through which clients interact with the application. It exposes REST endpoints that allow users to upload images and trigger image processing operations.
+
+API Gateway acts as the entry point of the system, receiving incoming HTTP requests and forwarding them to the appropriate AWS Lambda functions. The service also simplifies request routing, endpoint management, and integration with backend services.
+
+[LOUIS: Insert API endpoint summary table if available.]
 
 \subsubsection{AWS Lambda}
 
-Lambda functions execute image processing operations without requiring dedicated servers.
+AWS Lambda provides the serverless execution environment responsible for performing image processing operations.
+
+When a request is received from API Gateway, the corresponding Lambda function is invoked automatically. The function performs the required image resizing operation and stores the resulting image within Amazon S3.
+
+One of the primary advantages of AWS Lambda is its ability to automatically allocate execution resources according to workload demand. This behaviour makes Lambda particularly suitable for workloads characterised by unpredictable traffic patterns and varying request volumes.
+
+The Lambda configuration used during experimentation is summarised in Table \ref{tab:deployment}.
+
+[LOUIS: Confirm Lambda runtime, memory allocation, timeout configuration, and region.]
 
 \subsubsection{Amazon S3}
 
-S3 stores both input and processed images.
+Amazon Simple Storage Service (S3) is used as the persistent storage layer for the application.
 
-\subsubsection{CloudWatch}
+Uploaded images are stored within S3 buckets before processing, while processed images are also retained for retrieval and verification purposes. The service provides highly durable object storage and integrates directly with AWS Lambda, enabling efficient transfer of image data between storage and processing components.
 
-CloudWatch is used to collect monitoring and performance metrics during experimental testing.
+The use of S3 separates storage responsibilities from computation, allowing the application to scale independently across both dimensions.
+
+[LOUIS: Confirm bucket structure and naming convention used during implementation.]
+
+\subsubsection{Amazon CloudWatch}
+
+Amazon CloudWatch is used to monitor system behaviour and collect performance metrics throughout experimental testing.
+
+CloudWatch provides visibility into both operational and performance-related aspects of the deployment. Metrics collected during experimentation include invocation count, execution duration, concurrent executions, error count, and throttling events.
+
+These measurements form the basis of the performance evaluation presented later in this report and enable the analysis of system scalability under varying workload conditions.
+
+[JUAN: Insert screenshots or metric dashboard references if required.]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FEATURES UNDER EVALUATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Features Under Evaluation}
+
+The performance evaluation focuses on the components that directly influence the execution of image processing requests and the scalability characteristics of the serverless deployment.
+
+The primary components under evaluation are:
+
+\begin{itemize}
+\item AWS Lambda image processing functions.
+\item AWS API Gateway request handling.
+\item Amazon S3 storage interactions.
+\end{itemize}
+
+These components collectively represent the critical execution path of the application and therefore have the greatest influence on system performance.
+
+The study focuses specifically on the behaviour of the serverless processing pipeline under varying workload conditions. Particular attention is given to response time, throughput, concurrency levels, execution duration, and scaling behaviour.
+
+Several components are intentionally excluded from the evaluation:
+
+\begin{itemize}
+\item User authentication and authorisation services.
+\item Front-end interfaces and client-side rendering.
+\item External network conditions beyond the AWS environment.
+\item Advanced image processing algorithms unrelated to system scalability.
+\end{itemize}
+
+By restricting the scope of the analysis to the core processing pipeline, the evaluation is able to provide a clearer assessment of the performance and scalability characteristics of the AWS serverless architecture.
+
+The resulting experimental study therefore focuses on determining whether AWS Lambda can efficiently scale image processing workloads while maintaining acceptable levels of responsiveness, throughput, and reliability.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IMPLEMENTATION
@@ -232,6 +366,96 @@ The evaluation focuses on the following metrics:
 \item Error Rate
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WORKLOAD DESIGN
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Workload Design}
+
+The workload was designed to evaluate the behaviour of the serverless
+application under different operational conditions.
+
+Requests consisted of image resizing operations performed through the
+REST API exposed by API Gateway.
+
+To analyse the impact of input complexity, three image categories were
+considered:
+
+\begin{itemize}
+    \item Small images
+    \item Medium images
+    \item Large images
+\end{itemize}
+
+In addition, mixed workloads containing a combination of image sizes
+were evaluated to better represent realistic operating conditions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WORKLOAD PROFILE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Workload Profile}
+
+Each experiment followed a workload profile designed to observe both
+scale-out and scale-in behaviour.
+
+The workload consisted of five phases:
+
+\begin{enumerate}
+    \item Warm-up (WU)
+    \item Ramp-up (RU)
+    \item Steady-State (SS)
+    \item Ramp-down (RD)
+    \item Cool-down (CD)
+\end{enumerate}
+
+During the warm-up phase, a small number of requests were generated to
+initialise the Lambda execution environment and reduce cold-start effects.
+
+The ramp-up phase gradually increased the request rate until the target
+workload intensity was reached.
+
+The steady-state phase maintained a constant workload to observe
+stable system behaviour.
+
+The ramp-down phase gradually reduced the workload to evaluate the
+ability of the deployment to scale in.
+
+Finally, the cool-down phase allowed the system to return to idle
+conditions.
+
+Figure \ref{fig:workload_profile} illustrates the workload profile
+used during testing.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{workload_profile.png}
+\caption{Workload profile used during performance testing.}
+\label{fig:workload_profile}
+\end{figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BURST TESTING
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Burst Workload Evaluation}
+
+In addition to the continuous workload profile, burst workload tests
+were performed to evaluate the ability of the deployment to respond to
+sudden increases in demand.
+
+The burst workload consisted of a rapid increase in concurrent requests,
+followed by a return to normal operating conditions.
+
+This experiment was designed to evaluate:
+
+\begin{itemize}
+    \item Lambda scaling responsiveness.
+    \item Temporary response time degradation.
+    \item Concurrency growth behaviour.
+    \item Recovery time after workload reduction.
+\end{itemize}
+
 \subsection{Workload Scenarios}
 
 Four workload levels were considered.
@@ -261,17 +485,55 @@ The following tools were used:
 \item AWS CloudWatch
 \item Postman
 \end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% METRICS COLLECTED
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Metrics Collected}
 
+The evaluation considers both user-oriented and system-oriented metrics.
+
+\subsubsection*{User-Oriented Metrics}
+
 \begin{itemize}
-\item Average Response Time
-\item Throughput
-\item Concurrent Executions
-\item Lambda Duration
-\item Invocation Count
-\item Error Rate
+    \item Average Response Time
+    \item Throughput (requests/second)
+    \item Error Rate
+    \item Availability
 \end{itemize}
+
+\subsubsection*{System-Oriented Metrics}
+
+\begin{itemize}
+    \item Lambda Invocation Count
+    \item Lambda Duration
+    \item Concurrent Executions
+    \item Throttling Events
+    \item Scalability Behaviour
+\end{itemize}
+
+Metrics were collected using AWS CloudWatch and Apache JMeter.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EXPERIMENTAL PROCEDURE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Experimental Procedure}
+
+To improve result reliability, each experiment was executed multiple
+times under identical conditions.
+
+For each workload level:
+
+\begin{itemize}
+    \item The experiment was repeated five times.
+    \item CloudWatch metrics were collected throughout the execution.
+    \item JMeter recorded client-side performance measurements.
+    \item Average values were computed across all runs.
+\end{itemize}
+
+This approach reduces the impact of transient fluctuations and provides
+more representative performance measurements.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RESULTS
@@ -325,6 +587,28 @@ This section discusses:
 \item Resource utilization.
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BOTTLENECK ANALYSIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Bottleneck Analysis}
+
+Potential performance bottlenecks were identified through the analysis
+of response time, concurrency levels, Lambda duration, and throughput.
+
+The objective is to determine whether performance degradation originates
+from:
+
+\begin{itemize}
+    \item Lambda execution limits.
+    \item Memory allocation constraints.
+    \item API Gateway limitations.
+    \item Amazon S3 interaction delays.
+\end{itemize}
+
+Observed bottlenecks and their impact on system scalability are discussed
+using the experimental results.
+
 \subsection{Error Analysis}
 
 \begin{figure}[H]
@@ -335,6 +619,63 @@ This section discusses:
 \end{figure}
 
 Discussion of system reliability under load.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AVAILABILITY ANALYSIS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Availability Analysis}
+
+System availability was evaluated throughout all experimental runs.
+
+Availability was calculated as:
+
+\[
+Availability = \frac{Successful\ Requests}{Total\ Requests}
+\]
+
+or equivalently
+
+\[
+Availability = 1 - ErrorRate
+\]
+
+The results indicate the ability of the deployment to maintain service
+continuity during increasing workload conditions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WORKLOAD VERIFICATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Workload Verification}
+
+Before analysing performance metrics, the workload generated by JMeter
+was compared with the workload observed by AWS CloudWatch.
+
+This verification ensures that the request rate generated by the load
+generator matches the workload effectively received by the system.
+
+The comparison confirms that network limitations or configuration
+issues did not significantly alter the intended workload profile.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THREATS TO VALIDITY
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experimental Limitations}
+
+Several factors may influence the obtained results:
+
+\begin{itemize}
+    \item AWS Learner Lab resource limitations.
+    \item Variability in cloud resource allocation.
+    \item Internet latency fluctuations.
+    \item Limited workload intensity imposed by AWS usage policies.
+    \item Limited number of repetitions due to budget constraints.
+\end{itemize}
+
+Despite these limitations, the collected results provide a representative
+view of the scalability and performance characteristics of the deployment.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % COST EVALUATION
