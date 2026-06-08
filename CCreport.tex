@@ -37,6 +37,7 @@ Edward King
 
 \date{June 2026}
 
+\usepackage{graphicx}
 \begin{document}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -354,7 +355,73 @@ These measurements form the basis of the performance evaluation presented later 
 system scalability under varying workload conditions.
 
 [JUAN: Insert screenshots of the metric dashboard.]
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Execution time.png}
+    \caption{Execution Time.}
+    \label{Fig .1: Execution Time Beginning}
+\end{figure}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Execution time END.png}
+    \caption{Execution Time.}
+    \label{Fig .2:Execution Time End}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Invocations_1.png}
+    \caption{Metric - Invocations.}
+    \label{Fig .3:Invocations Beginning}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Invocations_2.png}
+    \caption{Metric - Invocations.}
+    \label{Fig .4:Invocations End}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - ConcurrentExecutions_1.png}
+    \caption{Concurrent Executions.}
+    \label{Fig .5:ConcurrentExecutions Beginning}
+\end{figure}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - ConcurrentExecutions_2.png}
+    \caption{Concurrent Executions.}
+    \label{Fig .6:ConcurrentExecutions End}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Erros_1.png}
+    \caption{Errors.}
+    \label{Fig .7:Errors Beginning}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Erros_2.png}
+    \caption{Errors.}
+    \label{Fig .8:Errors End}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Throttles_1.png}
+    \caption{Throttles.}
+    \label{Fig .9:Throttles Beginning}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Metric - Throttles_2.png}
+    \caption{Throttles.}
+    \label{Fig .10:Throttles End}
+\end{figure}
 
 \subsection{Features Under Evaluation}
 
@@ -430,7 +497,7 @@ operation according to the provided dimensions, and stores the processed image.
 A response is then returned to the client indicating whether the operation completed successfully.
 
 [LUIS OR JUAN: Confirm image processing library used (e.g. Pillow) and output image location.]
-
+[EDDIE: yes, we used pillow ]
 \subsection{Lambda Function Logic}
 
 The serverless application is implemented through AWS Lambda functions that execute on demand whenever requests are received 
@@ -439,6 +506,7 @@ through API Gateway.
 The processing Lambda function performs the following tasks:
 
 [LUIS OR JUAN: Confirm that these are the actual steps performed by the processing Lambda function.]
+[EDDIE: yes, those are the steps]
 \begin{enumerate}
 \item Receive processing parameters.
 \item Retrieve the image from Amazon S3.
@@ -595,6 +663,7 @@ were evaluated to better represent realistic operating conditions.
 The distribution of image types in the mixed workload was defined as:
 
 [LUIS OR JUAN: Confirm the actual distribution of image types used during testing.]
+[EDDIE: yeah is that]
 \begin{itemize}
     \item Small images: [X\%]
     \item Medium images: [Y\%]
