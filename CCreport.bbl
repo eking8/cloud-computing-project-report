@@ -1,0 +1,73 @@
+\begin{thebibliography}{10}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[{Amazon Web Services}(2026{\natexlab{a}})]{aws_api_gateway_docs}
+{Amazon Web Services}.
+\newblock Amazon api gateway developer guide.
+\newblock \url{https://docs.aws.amazon.com/apigateway/}, 2026{\natexlab{a}}.
+\newblock Accessed: 2026-06-07.
+
+\bibitem[{Amazon Web Services}(2026{\natexlab{b}})]{aws_cloudwatch_docs}
+{Amazon Web Services}.
+\newblock Amazon cloudwatch documentation.
+\newblock \url{https://docs.aws.amazon.com/cloudwatch/}, 2026{\natexlab{b}}.
+\newblock Accessed: 2026-06-07.
+
+\bibitem[{Amazon Web Services}(2026{\natexlab{c}})]{aws_lambda_docs}
+{Amazon Web Services}.
+\newblock Aws lambda documentation.
+\newblock \url{https://docs.aws.amazon.com/lambda/}, 2026{\natexlab{c}}.
+\newblock Accessed: 2026-06-07.
+
+\bibitem[{Amazon Web Services}(2026{\natexlab{d}})]{aws_pricing}
+{Amazon Web Services}.
+\newblock Aws pricing calculator.
+\newblock \url{https://calculator.aws/}, 2026{\natexlab{d}}.
+\newblock Accessed: 2026-06-07.
+
+\bibitem[{Apache Software Foundation}(2026)]{jmeter_docs}
+{Apache Software Foundation}.
+\newblock Apache jmeter user manual.
+\newblock \url{https://jmeter.apache.org/usermanual/}, 2026.
+\newblock Accessed: 2026-06-07.
+
+\bibitem[Armbrust et~al.(2010)Armbrust, Fox, Griffith, Joseph, Katz, Konwinski,
+  Lee, Patterson, Rabkin, Stoica, and Zaharia]{armbrust2010view}
+Michael Armbrust, Armando Fox, Rean Griffith, Anthony~D Joseph, Randy Katz,
+  Andy Konwinski, Gunho Lee, David Patterson, Ariel Rabkin, Ion Stoica, and
+  Matei Zaharia.
+\newblock A view of cloud computing.
+\newblock \emph{Communications of the ACM}, 53\penalty0 (4):\penalty0 50--58,
+  2010.
+
+\bibitem[Jonas et~al.(2019)Jonas, Schleier-Smith, Sreekanti,
+  et~al.]{jonas2019cloud}
+Eric Jonas, Johann Schleier-Smith, Vikram Sreekanti, et~al.
+\newblock Cloud programming simplified: A berkeley view on serverless
+  computing.
+\newblock \emph{arXiv preprint arXiv:1902.03383}, 2019.
+
+\bibitem[McGrath and Brenner(2020)]{mackenzie2020serverless_costs}
+Garrett McGrath and Paul~R. Brenner.
+\newblock Serverless computing: Economic and architectural impact.
+\newblock \emph{IEEE Internet Computing}, 2020.
+
+\bibitem[Netto et~al.(2014)Netto, Cardonha, Cunha, and
+  Assuncao]{netto2014autoscaling}
+M.~A.~S. Netto, C.~Cardonha, R.~L.~F. Cunha, and M.~D. Assuncao.
+\newblock Evaluating auto-scaling strategies for cloud computing environments.
+\newblock In \emph{2014 IEEE 22nd International Symposium on Modelling,
+  Analysis \& Simulation of Computer and Telecommunication Systems (MASCOTS)},
+  pages 187--196, 2014.
+\newblock \doi{10.1109/MASCOTS.2014.32}.
+
+\bibitem[Spillner et~al.(2017)]{spillner2017serverless}
+Josef Spillner et~al.
+\newblock Serverless computing for scientific computing.
+\newblock In \emph{IEEE International Conference on Cloud Computing}, 2017.
+
+\end{thebibliography}
