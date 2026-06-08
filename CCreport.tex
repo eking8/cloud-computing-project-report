@@ -66,7 +66,7 @@ This project investigates a serverless image processing application using AWS cl
 The focus is not on image processing itself, but on evaluating performance and scalability under varying workloads. Testing was conducted under different workload conditions to assess scalability and identify potential performance limitations or bottlenecks.
 
 The project objectives are to design and implement a serverless image processing application using AWS services, deploy it using AWS Lambda and API Gateway, and evaluate performance under varying workload conditions. It also aims to analyse serverless scalability, investigate the relationship between workload intensity and resource utilisation, and estimate operational cost while comparing it with an alternative cloud deployment model.
-The application implements a simple workflow of image upload, storage, and resizing. Users interact via HTTP endpoints exposed by Amazon API Gateway. Images are stored in Amazon S3, and processing is performed by AWS Lambda functions.
+The application implements a simple workflow of image storage and resizing. Users interact with the system through an HTTP API endpoint exposed by Amazon API Gateway to trigger processing requests. Input images are stored in Amazon S3, and processing is performed by AWS Lambda functions.
 
 The scope includes image storage using Amazon S3, image processing requests via an HTTP API endpoint, and image resizing using AWS Lambda. It also includes monitoring and metric collection via Amazon CloudWatch, along with experimental performance and scalability evaluation.
 The project does not focus on advanced image analysis, machine learning, or front-end development. Instead, it focuses on evaluating serverless behaviour under controlled workloads.
@@ -93,7 +93,7 @@ which retrieves the selected image from the S3 input bucket, performs the reques
 and stores the processed result in an Amazon S3 output bucket. Amazon CloudWatch collects execution logs 
 and monitoring metrics such as invocations, duration, concurrent executions, errors, and throttles.
 
-The image processing workflow begins when a client submits a request through the API endpoint, which is received and routed by Amazon API Gateway to an AWS Lambda function responsible for image processing. The Lambda function retrieves the relevant image data, performs the required resizing operation, and stores both input and processed images in Amazon S3. The processed result is then returned to the client via API Gateway, while Amazon CloudWatch continuously records operational and performance metrics throughout the execution of the workflow.
+The image processing workflow begins when a client submits a request through the API endpoint, which is received and routed by Amazon API Gateway to an AWS Lambda function responsible for image processing. The Lambda function retrieves the relevant image data from Amazon S3, performs the required resizing operation, and stores the processed result in the output bucket. The processed result is then returned to the client via API Gateway, while Amazon CloudWatch continuously records operational and performance metrics throughout the execution of the workflow.
 
 \begin{figure*}[t]
 \centering
@@ -324,13 +324,12 @@ Images are organised into logical folders according to workload category and tes
 \subsubsection*{Example structure}
 
 \begin{verbatim}
-bucket-name/
-|
-|-- input/
-|   |-- small/
-|   |-- medium/
-|   |-- large/
-|
+input-bucket/
+|-- small/
+|-- medium/
+|-- large/
+
+output-bucket/
 |-- processed/
 \end{verbatim}
 
@@ -375,7 +374,7 @@ The workload was designed to evaluate the behaviour of the serverless
 application under different operational conditions.
 Requests consisted of image resizing operations performed through the HTTP request interface exposed by API Gateway, with previously defined image size categories used to analyse input complexity. Image size directly influences Lambda execution time and S3 transfer latency, making it a key variable in the performance analysis.
 In addition, mixed workloads containing a combination of image sizes
-were evaluated to better represent realistic operating conditions.
+were considered as a possible extension to better represent realistic operating conditions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % WORKLOAD PROFILE
@@ -391,22 +390,20 @@ were evaluated to better represent realistic operating conditions.
 
 \subsection{Workload Profile}
 
-Each experiment followed a structured workload profile designed to observe both scale-out and scale-in behaviour of AWS Lambda, consisting of five phases: warm-up (WU), ramp-up (RU), steady-state (SS), ramp-down (RD), and cool-down (CD)
-During the warm-up phase, a small number of requests were generated to
-initialise the Lambda execution environment and reduce the impact of cold starts. The ramp-up phase gradually increased the request rate until the target
+A structured workload profile was designed to observe both scale-out and scale-in behaviour of AWS Lambda, consisting of five phases: warm-up (WU), ramp-up (RU), steady-state (SS), ramp-down (RD), and cool-down (CD). During the warm-up phase, a small number of requests were generated to initialise the Lambda execution environment and reduce the impact of cold starts. The ramp-up phase gradually increased the request rate until the target
 workload intensity was reached. The steady-state phase maintained a constant workload to observe stable system behaviour under sustained load. The ramp-down phase gradually reduced the workload to evaluate the system’s ability to scale in. Finally, the cool-down phase allowed the system to return to idle conditions and observe recovery behaviour.
 Figure \ref{fig:workload_profile} illustrates the workload profile
 used during testing.
-
-
+This workload profile represents the intended evaluation design. However, the continuous increase/decrease experiment could not be fully completed because the AWS Learner Lab account was deactivated after excessive resource consumption. Therefore, this part of the evaluation is treated as supporting qualitative evidence rather than as a complete quantitative result.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BURST TESTING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Burst Workload Evaluation}
 
-In addition to the continuous workload profile, burst workload tests were performed to evaluate the system’s responsiveness to sudden changes in demand. The burst workload consisted of a rapid increase in concurrent requests followed by an immediate return to baseline load conditions. The burst scenario was defined as: \textit{Initial load: 19.93 requests per second (at 10 concurrent users), Burst peak load: 196.20 requests per second (at 100 concurrent users), Return to baseline: 19.93 requests per second (or 99.13 requests per second at medium load)}. This experiment was designed to evaluate Lambda scaling responsiveness under sudden load increases, temporary degradation in response time during burst events, concurrency growth behaviour during rapid scaling, and recovery time after workload reduction.
-
+In addition to the continuous workload profile, burst workload tests were designed and partially attempted to evaluate the system’s responsiveness to sudden changes in demand.
+The burst workload concept consisted of a rapid increase in concurrent requests followed by an immediate return to baseline load conditions. This design was intended to evaluate Lambda scaling responsiveness under sudden load increases, temporary degradation in response time during burst events, concurrency growth behaviour during rapid scaling, and recovery time after workload reduction.
+Because the AWS Learner Lab account was later deactivated due to excessive resource consumption, the burst and continuous-profile experiments are reported as partial supporting evidence rather than as fully completed experimental campaigns.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % WORKLOAD SCENARIOS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -478,8 +475,11 @@ Availability & Throttling Events \\
 
 \subsection{Experimental Procedure}
 
-To improve result reliability, each experiment was executed multiple times under identical conditions, with each workload level repeated five times while CloudWatch metrics were collected throughout the execution window and JMeter recorded client-side performance measurements. Average values were computed across all runs, and standard deviation was calculated to assess variability. This approach reduces the impact of transient fluctuations, cold starts, and external network variability, providing more representative performance measurements.
+To improve result reliability, each experiment in the main evaluation matrix was executed multiple times under identical conditions. For each image size and workload level combination (10, 50, and 100 users), the experiment was repeated three times while CloudWatch metrics were collected throughout the execution window and JMeter recorded client-side performance measurements. Average values were computed across the three runs, and standard deviation was calculated to assess variability. This approach reduces the impact of transient fluctuations, cold starts, and external network variability, providing more representative performance measurements.
 
+In addition to the main workload matrix, separate stress tests were executed at 400, 800, 1200, and 1500 concurrent users in order to observe system behaviour beyond the primary evaluation range.
+
+Detailed run-by-run evidence, including Apache JMeter screenshots, stress-test outputs, and cost-estimation inputs, was compiled separately as supporting experimental material.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RESULTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -491,6 +491,7 @@ the experimental evaluation of the AWS serverless image processing system.
 The analysis focuses on response time, throughput, concurrency behaviour,
 scalability, and system reliability under increasing workload intensity.
 
+Unless otherwise stated, the reported averages were computed from three repeated runs per scenario using the experimental data collected with Apache JMeter and Amazon CloudWatch.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RESPONSE TIME
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -505,6 +506,7 @@ and response time.
 \centering
 \includegraphics[width=0.8\textwidth]{response_time.png}
 \caption{Response Time vs Concurrent Users}
+\caption*{\footnotesize Source: Authors' own experimental data collected with Apache JMeter and Amazon CloudWatch.}
 \label{fig:response_time}
 \end{figure*}
 
@@ -514,7 +516,7 @@ The results indicate that the system's response time does not follow a conventio
 At low workload levels (10 users), the system exhibits its highest average latency for this category, with a response time of 443.00 ms, which is typically attributed to initial cold start overhead. As the workload increases to medium levels (50 users), the response time decreases to 399.00 ms, indicating the positive effect of container reuse as invocation frequency rises. Under heavy load conditions (100 users), the response time drops further to 355.67 ms, demonstrating that high concurrency optimizes performance by keeping execution environments continuously warm.
 
 \textbf{Medium Images}
-At low workload levels (10 users), the system maintains a stable and low baseline latency, with an average response time of approximately 393.00 ms. As the workload increases to medium levels (50 users), response time experiencing only a marginal increase to 406.33 ms, showing that the architecture efficiently scales to absorb the traffic. Under heavy load conditions (100 users), the response time rises slightly to 408.67 ms, confirming the absence of significant queuing delays or concurrency contention.
+At low workload levels (10 users), the system maintains a stable and low baseline latency, with an average response time of approximately 393.00 ms. As the workload increases to medium levels (50 users), the response time experiences only a marginal increase to 406.33 ms, showing that the architecture efficiently scales to absorb the traffic. Under heavy load conditions (100 users), the response time rises slightly to 408.67 ms, confirming the absence of significant queuing delays or concurrency contention.
 
 \textbf{Large Images}
 At low workload levels (10 users), handling heavier payloads results in a baseline average response time of 640.00 ms. As the workload increases to medium levels (50 users), the system demonstrates high stability, with the response time changing minimally to 644.33 ms. Under heavy load conditions (100 users), the response time shows a slight upward trend to 658.33 ms, suggesting that despite the intensive computational demand of larger files, the serverless infrastructure successfully mitigates resource contention and scaling overhead.
@@ -530,6 +532,7 @@ At low workload levels (10 users), handling heavier payloads results in a baseli
 \centering
 \includegraphics[width=0.8\textwidth]{throughput.png}
 \caption{Throughput vs Concurrent Users}
+\caption*{\footnotesize Source: Authors' own experimental data collected with Apache JMeter and Amazon CloudWatch.}
 \label{fig:throughput}
 \end{figure*}
 
@@ -553,6 +556,7 @@ until resource limits are reached.
 \centering
 \includegraphics[width=0.8\textwidth]{concurrency.png}
 \caption{Concurrent Lambda Executions}
+\caption*{\footnotesize Source: Authors' own experimental data collected with Apache JMeter and Amazon CloudWatch.}
 \label{fig:concurrency}
 \end{figure*}
 
@@ -570,7 +574,8 @@ concurrency adjustment is visible during burst workloads, which is consistent wi
 
 \subsection{Scalability Evaluation}
 
-The system scales until it reaches the AWS Learner Lab concurrency limit (approximately 895–1000), beyond which throttling becomes the dominant constraint, after which the system approached the AWS Learner Lab concurrency limit, resulting in throttling at peak load. This indicates that scaling was ultimately constrained by service quotas rather than intrinsic limitations of AWS Lambda itself. While CPU and memory usage remain abstracted, execution duration increases under stress, indicating rising resource contention. Overall, the system exhibits horizontal scalability up to the observed concurrency limit, after which performance gains begin to diminish.
+The system scales until it approaches the AWS Learner Lab concurrency limit (approximately 895--1000 concurrent executions), beyond which throttling becomes the dominant constraint. This indicates that scalability is ultimately constrained by service quotas rather than by intrinsic limitations of AWS Lambda itself.
+Execution duration also increases under stress conditions, suggesting additional queuing or resource contention near saturation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BOTTLENECK ANALYSIS
@@ -580,27 +585,26 @@ The system scales until it reaches the AWS Learner Lab concurrency limit (approx
 
 Potential performance bottlenecks were identified through the analysis of response time, concurrency levels, Lambda duration, and throughput, with the objective of determining whether performance degradation originates from infrastructure limits or application-level constraints. The potential bottlenecks considered include AWS Lambda execution limits (concurrency and cold starts), memory allocation constraints affecting image processing speed, API Gateway request handling latency under high load, and Amazon S3 read/write latency during peak traffic periods.
 
-The generalisability of the results may be influenced by the experimental setup, including the fact that the experiments were conducted within the AWS Learner Lab environment, which imposes service quotas and resource restrictions not necessarily representative of production environments. The workload intensity was limited to 100 concurrent users and a peak request rate of 196.20 requests per second, which may not reflect large-scale industrial workloads, and the image dataset used in the evaluation consisted of a categorized dataset of small, medium, and large image profiles configured to evaluate the operational impact of distinct payload sizes on serverless resizing and grayscale processing, which may not represent all real-world image distributions.
+The generalisability of the results may be influenced by the experimental setup, including the fact that the experiments were conducted within the AWS Learner Lab environment, which imposes service quotas and resource restrictions not necessarily representative of production environments. The main workload matrix considered up to 100 concurrent users and a peak request rate of 196.20 requests per second, while additional stress tests were conducted at 400, 800, 1200, and 1500 concurrent users. These conditions may still not reflect large-scale industrial workloads, and the image dataset used in the evaluation consisted of categorised small, medium, and large image profiles configured to evaluate the operational impact of distinct payload sizes on serverless resizing, which may not represent all real-world image distributions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ERROR ANALYSIS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Error Analysis}
 
-
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.8\textwidth]{errors.png}
 \caption{Error Rate vs Concurrent Users}
+\caption*{\footnotesize Source: Authors' own experimental data collected with Apache JMeter and Amazon CloudWatch.}
 \label{fig:errorrate}
 \end{figure*}
 
+The system demonstrates a low error rate under the main workload matrix. At 10, 50, and 100 users, the error rate remained at 0.00\% for all image categories, indicating stable and reliable execution under the primary evaluation scenarios.
 
-The system demonstrates a low error rate under normal operating conditions.
-At low and medium workloads (10–50 users), the error rate remains at 0.00\%, indicating stable and reliable execution.
-Under high load conditions (100 users or stress test), the error rate remains at 0\%, indicating that no application-level failures were recorded. However, a significant number of throttling events were observed, suggesting that some requests were delayed or rejected at the infrastructure level but did not translate into measured client-side errors due to retry behaviour or request handling in the test setup.
+Additional stress tests showed that the system continued to operate without client-side errors at 400 and 800 concurrent users, but errors began to appear at higher stress levels, reaching 4.05\% at 1200 users and 23.33\% at 1500 users. These results indicate that the deployment remained robust across the main evaluation scenarios but eventually experienced reliability degradation under extreme concurrency.
 
-However, no catastrophic failure was observed, suggesting that the system maintains acceptable reliability even under stress conditions
+Despite this, no catastrophic failure was observed, suggesting that the system maintained acceptable resilience even near saturation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % AVAILABILITY ANALYSIS
@@ -622,25 +626,20 @@ or equivalently:
 Availability = 1 - ErrorRate
 \]
 
-Across all experiments, the system achieved an overall availability of 100.00\% in terms of successfully completed requests as observed at the application level. However, this does not account for throttled requests at the infrastructure layer, which were observed under peak load conditions. These throttling events indicate that while the system remained operational and did not experience application-level failures, the underlying infrastructure was operating at or near its concurrency limits.
+For the main workload matrix (10, 50, and 100 users across all image sizes), the system achieved 100.00\% availability at the application level. However, when the additional stress scenarios are considered, availability decreases under extreme load because client-side error rates appear at 1200 and 1500 concurrent users.
+
+These results indicate that the system remained fully operational during the primary evaluation scenarios, while reliability began to degrade only near saturation under the highest stress conditions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % WORKLOAD VERIFICATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Workload Verification}
 
-Before analysing performance metrics, the workload generated by JMeter
-was compared with the workload observed in AWS CloudWatch.
-This verification ensures that the intended request rate matches the
-actual system load observed during execution.
+Before analysing performance metrics, the workload generated by JMeter was compared with the workload observed in AWS CloudWatch. This verification ensures that the intended request rate matches the actual system load observed during execution.
 
-The comparison confirms that the generated workload closely aligns with
-CloudWatch invocation metrics, with 0.00\% deviation.
-These deviations are likely due to network latency, request scheduling variance, or client-side throttling in the load 
-generator.
+The comparison showed that the generated workload and the CloudWatch invocation trends were broadly consistent, although minor differences are expected due to network latency, request scheduling variance, and the aggregation granularity of CloudWatch metrics.
 
-Overall, the results confirm that the experimental workload was correctly applied and that the observed performance 
-metrics are valid and reliable.
+Overall, the results indicate that the experimental workload was applied as intended and that the recorded performance trends are representative.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % THREATS TO VALIDITY
@@ -658,8 +657,7 @@ Several factors may affect the accuracy of the measured performance metrics, inc
 \subsection{External Validity}
 
 
-The generalisability of the results may be influenced by the experimental setup, including the fact that the experiments were conducted within the AWS Learner Lab environment, which imposes service quotas and resource restrictions not necessarily representative of production environments. The workload intensity was limited to 100 concurrent users and a peak request rate of 196.20 requests per second, which may not reflect large-scale industrial workloads, and the image dataset used in the evaluation consisted of a categorized dataset of small, medium, and large image profiles configured to evaluate the operational impact of distinct payload sizes on serverless resizing and grayscale processing, which may not represent all real-world image distributions.
-
+The generalisability of the results may be influenced by the experimental setup, including the fact that the experiments were conducted within the AWS Learner Lab environment, which imposes service quotas and resource restrictions not necessarily representative of production environments. The main workload matrix considered up to 100 concurrent users and a peak request rate of 196.20 requests per second, while additional stress tests were conducted at 400, 800, 1200, and 1500 concurrent users. These conditions may still not reflect large-scale industrial workloads, and the image dataset used in the evaluation consisted of a categorised dataset of small, medium, and large image profiles configured to evaluate the operational impact of distinct payload sizes on serverless resizing, which may not represent all real-world image distributions.
 
 \subsection{Construct Validity}
 
@@ -697,6 +695,7 @@ As a comparison baseline, an alternative deployment was considered using one Ama
 \begin{table*}[t]
 \centering
 \caption{Estimated 6-Month Cost Comparison}
+\caption*{\footnotesize Source: Authors' calculations based on AWS Pricing Calculator estimates.}
 \label{tab:costcomparison}
 \begin{tabular}{lcc}
 \toprule
@@ -721,16 +720,13 @@ Beyond cost, the serverless architecture also reduces management effort because 
 The experimental results provide a comprehensive view of the performance and scalability characteristics of the AWS 
 Lambda-based image processing system under several workload conditions.
 
-The system demonstrates effective scalability up to approximately 100 concurrent users. Beyond this point, no performance plateau or infrastructure constraints were observed within the tested limits, as throughput continued to scale near-linearly.
-In particular, response time degradation becomes noticeable at the beginning of the workload (the 10-user threshold) for small images, which may be influenced by cold starts and initial container provisioning effects, as well as early-stage variability in resource allocation. In contrast, for larger images under heavy load, the slight increase to 658.33 ms is primarily due to computational payload processing overhead associated with larger image sizes rather than service-level constraints.
+The system demonstrates effective scalability throughout the main workload matrix up to 100 concurrent users, with throughput increasing strongly across all image categories. Additional stress tests at 400 and 800 users still completed without client-side errors, while higher stress levels at 1200 and 1500 users introduced measurable error rates, indicating that the deployment approached saturation under extreme concurrency. In particular, response time degradation becomes noticeable at the beginning of the workload (the 10-user threshold) for small images, which may be influenced by cold starts and initial container provisioning effects, as well as early-stage variability in resource allocation. In contrast, for larger images under heavy load, the slight increase to 658.33 ms is primarily due to computational payload processing overhead associated with larger image sizes rather than service-level constraints.
 
 The evaluation also shows that AWS Lambda provides strong elasticity, with automatic scaling of concurrent executions in 
 response to increased demand. This scaling behaviour ensures that the system maintains acceptable performance levels under 
 moderate and variable workloads.
 
-However, the most significant bottlenecks were observed in initial Lambda cold starts during burst transitions, especially under burst workload conditions. These bottlenecks manifested as transiently increased maximum response times (up to 2,022.00 ms) during the initial spin-up of new containers, though without any reduction in throughput or breaches of its scaling limits. Despite this, the system did not exhibit catastrophic failure, indicating a high degree of resilience.
-
-The burst workload experiments further revealed that the system is capable of recovering from sudden spikes in demand within approximately a few seconds, corresponding to the brief window required for AWS Lambda to provision and warm up concurrent execution environments. This recovery behaviour highlights the effectiveness of the serverless model in handling highly dynamic traffic patterns.
+However, the most significant bottlenecks were observed in cold-start effects and in service-level constraints at very high concurrency. These effects manifested as elevated maximum response times in low-load runs and as increasing throttling and client-side errors near the highest stress conditions. Despite this, the system did not exhibit catastrophic failure, indicating a meaningful degree of resilience.
 
 Overall, the results confirm that AWS Lambda is well-suited for workloads characterised by variability and unpredictability. 
 Nevertheless, performance limitations become evident under sustained high concurrency, where scaling delays and service 
@@ -746,10 +742,7 @@ This project implemented and evaluated a serverless image processing application
 and CloudWatch. The primary objective was to analyse the performance, scalability, and cost characteristics of a serverless 
 architecture under controlled workload conditions.
 
-The experimental results demonstrated that the system is capable of automatically scaling in response to 
-increasing workload intensity, with AWS Lambda effectively handling concurrent execution growth up to 895 concurrent 
-executions. Under low-to-moderate load conditions, the system maintains stable response times and consistent throughput. 
-Performance variation was primarily driven by cold start overhead at low loads and infrastructure constraints under peak demand, including service quota limits. Cold starts increased maximum response times to 2,022.00 ms, while execution time rose modestly to 658.33 ms for large payloads under peak concurrency.
+The experimental results demonstrated that the system is capable of automatically scaling in response to increasing workload intensity, with AWS Lambda effectively handling concurrent execution growth up to the observed Learner Lab limits. Under the main evaluation scenarios, the system maintained stable response times, consistent throughput, and zero client-side errors. Performance variation was primarily driven by cold-start overhead at low loads and infrastructure constraints under peak demand, including service quota limits. At the highest stress levels, error rates increased, indicating that reliability degradation appears only near saturation.
 
 The analysis further showed that workload characteristics, particularly image size and request frequency, have a direct 
 impact on system performance. Larger images and higher concurrency levels lead to increased execution time and reduced 
