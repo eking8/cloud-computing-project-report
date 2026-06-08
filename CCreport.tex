@@ -14,6 +14,9 @@
 \usepackage{hyperref}
 \usepackage[numbers]{natbib}
 
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric}
+
 \hypersetup{
 colorlinks=true,
 linkcolor=blue,
@@ -107,16 +110,15 @@ The objectives of this project are:
 
 \subsection{Project Scope}
 
-The developed application provides a simple image processing workflow consisting of image storage and image resizing 
-operations. Images are stored directly within Amazon S3, while users interact with the processing service through an 
-HTTP endpoint exposed by AWS API Gateway. Image processing tasks are executed by AWS Lambda functions and the resulting 
-images are stored back in Amazon S3.
+The developed application provides a simple image processing workflow consisting of image upload, storage, and resizing operations. 
+Users interact with the system through HTTP endpoints exposed by Amazon API Gateway. 
+Uploaded images are stored in Amazon S3, while image processing tasks are executed by AWS Lambda functions.
 
 The scope of the project includes:
 
 
 \begin{itemize}
-\item Image storage within Amazon S3 input buckets.
+\item Image upload through HTTP API endpoints.
 \item Image storage using Amazon S3.
 \item Image resizing operations executed by AWS Lambda.
 \item Monitoring and metric collection through Amazon CloudWatch.
@@ -170,42 +172,120 @@ integration between storage, processing, and monitoring components.
 
 Figure \ref{fig:architecture} illustrates the overall system architecture.
 
-[LOUIS OR JUAN: If you describe in words what the architecture looks like I can make a nice looking flow chart. 
-Below is what chat GPT generated. Maybe just check this and conform that it's correct?]
+The system is based on Amazon API Gateway, AWS Lambda, Amazon S3, and Amazon CloudWatch. Input images are 
+stored directly in an Amazon S3 input bucket, where they are organised by workload category using the 
+prefixes \texttt{small/}, \texttt{medium/}, and \texttt{large/}. A client then sends an HTTP request to 
+Amazon API Gateway through the \texttt{/process} endpoint. API Gateway invokes an AWS Lambda function, 
+which retrieves the selected image from the S3 input bucket, performs the requested resizing operation, 
+and stores the processed result in an Amazon S3 output bucket. Amazon CloudWatch collects execution logs 
+and monitoring metrics such as invocations, duration, concurrent executions, errors, and throttles.
 
 The image processing workflow consists of the following steps:
 
 \begin{enumerate}
-\item An image is uploaded directly to an Amazon S3 input bucket.
-\item A client submits an image processing request through the API Gateway HTTP endpoint.
-\item AWS API Gateway forwards the request to the image-processing Lambda function.
-\item The Lambda function retrieves the specified image from Amazon S3.
-\item The image is resized according to the requested parameters.
-\item The processed image is stored in an Amazon S3 output location.
-\item The processing result is returned to the client through API Gateway.
-\item Amazon CloudWatch records operational and performance metrics throughout execution.
+\item A client submits an image processing request through a REST API endpoint.
+\item AWS API Gateway receives the request and performs request routing.
+\item The request is forwarded to an AWS Lambda function responsible for image processing.
+\item The Lambda function retrieves or receives the image data and performs the required resizing operation.
+\item Input and processed images are stored within Amazon S3.
+\item The processed image or processing result is returned to the client through API Gateway.
+\item Amazon CloudWatch continuously records operational and performance metrics generated during execution.
 \end{enumerate}
 
-[EDDIE: Once that flow diagram is made make sure the paragraph below (and even subsubsections) makes sense]
-This architecture eliminates the need to provision or manage virtual machines while allowing resources to scale automatically 
-in response to workload fluctuations.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.8cm,
+    every node/.style={font=\small},
+    box/.style={
+        rectangle,
+        draw,
+        rounded corners,
+        align=center,
+        minimum width=4cm,
+        minimum height=1cm
+    },
+    arrow/.style={
+        thick,
+        -{Stealth}
+    }
+]
+
+% Main flow
+\node[box] (client) {Client};
+
+\node[box, below=of client] (api) {
+Amazon API Gateway\\
+HTTP Endpoint (/process)
+};
+
+\node[box, below=of api] (lambda) {
+AWS Lambda\\
+Image Processor
+};
+
+\node[box, below left=2cm and 2.5cm of lambda] (input) {
+Amazon S3\\
+Input Bucket\\
+\texttt{small/}\\
+\texttt{medium/}\\
+\texttt{large/}
+};
+
+\node[box, below right=2cm and 2.5cm of lambda] (output) {
+Amazon S3\\
+Output Bucket\\
+\texttt{processed/}
+};
+
+\node[box, right=5cm of lambda] (cloudwatch) {
+Amazon CloudWatch\\
+Invocations\\
+Duration\\
+Concurrency\\
+Errors\\
+Throttles
+};
+
+% Connections
+\draw[arrow] (client) -- node[right] {HTTP POST /process} (api);
+
+\draw[arrow] (api) -- node[right] {Invoke} (lambda);
+
+\draw[arrow] (lambda) -- node[left] {Read Image} (input);
+
+\draw[arrow] (input) -- node[below left] {Image Data} (lambda);
+
+\draw[arrow] (lambda) -- node[below right] {Processed Image} (output);
+
+\draw[arrow] (lambda) -- (cloudwatch);
+
+\end{tikzpicture}
+\caption{Serverless image processing workflow and AWS service interactions.}
+\label{fig:architecture}
+\end{figure}
+
 
 [EDDIE: As well as being checked the below might need references]
 \subsection{AWS Components}
 
 The deployment relies on four primary AWS services: API Gateway, AWS Lambda, Amazon S3, and Amazon CloudWatch. 
-Together, these services provide the functionality required to implement, operate, and evaluate the serverless image 
-processing application.
+Together, these services provide the functionality required to implement, operate, and evaluate the serverless 
+image processing application.
 
 \subsubsection{API Gateway}
 
 Amazon API Gateway provides the external interface through which clients interact with the application 
-\citep{aws_api_gateway_docs}. t exposes an HTTP endpoint that allows users to trigger image processing 
-operations on images already stored within Amazon S3.
+\citep{aws_api_gateway_docs}. In the final version of the system, API Gateway exposes a single HTTP endpoint, 
+\texttt{/process}, which is used to trigger the image-processing Lambda function.
 
-API Gateway acts as the entry point of the system, receiving incoming HTTP requests and forwarding them to the appropriate 
-AWS Lambda functions. The service also simplifies request routing, endpoint management, and integration with backend 
-services.
+API Gateway acts as the entry point of the system, receiving incoming HTTP requests and forwarding them to AWS 
+Lambda. Each request specifies the location of the image in Amazon S3 together with the required processing 
+parameters, such as the resizing operation and output dimensions. Since images are stored directly in S3 before 
+processing, the API layer remains lightweight and focuses only on request routing and backend integration.
+
+This design simplifies the architecture, reduces the number of application components, and allows performance 
+testing to concentrate on the critical processing path formed by API Gateway, Lambda, and Amazon S3.
 
 [LUIS OR JUAN: Insert HTTP summary table if available.]
 
@@ -213,8 +293,9 @@ services.
 
 AWS Lambda provides the serverless execution environment responsible for performing image processing operations.
 
-When a request is received from API Gateway, the corresponding Lambda function is invoked automatically. The function 
-performs the required image resizing operation and stores the resulting image within Amazon S3.
+When a request is received from API Gateway, the corresponding Lambda function is invoked automatically. 
+The function performs the required image resizing operation and stores the resulting image within Amazon S3.
+
 
 One of the primary advantages of AWS Lambda is its ability to automatically allocate execution resources according 
 to workload demand \citep{aws_lambda_docs, netto2014autoscaling}. This behaviour makes Lambda particularly suitable 
@@ -222,21 +303,51 @@ for workloads characterised by unpredictable traffic patterns and varying reques
 
 The Lambda configuration used during experimentation is summarised in Table \ref{tab:deployment}.
 
-[LUIS OR JUAN: Confirm Lambda runtime, memory allocation, timeout configuration, and region.]
+\begin{table}[H]
+\centering
+\caption{Deployment Configuration}
+\label{tab:deployment}
+\begin{tabular}{ll}
+\toprule
+Parameter & Value \\
+\midrule
+Lambda Runtime & Python 3.11 \\
+Memory Allocation & 128 MB \\
+Timeout & 3 seconds \\
+Region & us-east-1 (US East / N. Virginia) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-[JUAN: This is the part I'm most unsure about]
+
+
 \subsubsection{Amazon S3}
 
-Amazon Simple Storage Service (S3) is used as the persistent storage layer for the application \citep{aws_s3_docs}.
+Amazon S3 was organised into an input bucket and an output bucket. 
+The input bucket stored the original images grouped by workload category using the prefixes \texttt{small/}, 
+\texttt{medium/}, and \texttt{large/}. 
+The output bucket stored processed images using an operation-based naming convention such as 
+\texttt{processed/resize/}, \texttt{processed/grayscale/}, and \texttt{processed/resize\_grayscale/}. 
+This structure simplified workload preparation, result verification, and performance testing across 
+different image sizes.
 
-Images are uploaded directly to S3 input buckets before processing, while processed images are stored in separate 
-output locations for retrieval and verification purposes. The service provides highly durable object storage and 
-integrates directly with AWS Lambda, enabling efficient transfer of image data between storage and processing components.
+\centering
+\caption{S3 Bucket Structure}
+\label{tab:s3structure}
+\begin{tabular}{ll}
+\toprule
+Bucket / Prefix & Purpose \\
+\midrule
+Input bucket / \texttt{small/} & Small input images \\
+Input bucket / \texttt{medium/} & Medium input images \\
+Input bucket / \texttt{large/} & Large input images \\
+Output bucket / \texttt{processed/resize/} & Resized output images \\
+Output bucket / \texttt{processed/grayscale/} & Grayscale output images \\
+Output bucket / \texttt{processed/resize\_grayscale/} & Resized grayscale output images \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-The use of S3 separates storage responsibilities from computation, allowing the application to scale independently 
-across both dimensions.
-
-[LUIS OR JUAN: Confirm bucket structure and naming convention used during implementation.]
 
 \subsubsection{Amazon CloudWatch}
 
@@ -259,7 +370,6 @@ the scalability characteristics of the serverless deployment.
 
 The primary components under evaluation are:
 
-[LUIS OR JUAN: Check that these are the components we actually implemented and tested]
 \begin{itemize}
 \item AWS Lambda image processing functions.
 \item AWS API Gateway request handling.
@@ -371,6 +481,19 @@ bucket-name/
 This organisation simplifies experimental testing and enables controlled evaluation of image processing performance across 
 different image sizes.
 
+\subsection{Data Preparation}
+
+Before experimental testing, the input images were uploaded directly to the Amazon S3 input bucket. To support workload variation, the dataset was organised into three categories:
+
+\begin{itemize}
+\item \texttt{small/} for small images
+\item \texttt{medium/} for medium images
+\item \texttt{large/} for large images
+\end{itemize}
+
+Processed images were stored in the output bucket using operation-specific prefixes such as \texttt{processed/resize/}, \texttt{processed/grayscale/}, and \texttt{processed/resize\_grayscale/}.
+
+
 \subsection{Monitoring and Logging}
 
 Amazon CloudWatch was configured to collect operational and performance metrics throughout system execution.
@@ -392,23 +515,16 @@ These metrics were later used to evaluate scalability, performance, and reliabil
 
 [EDDIE: Reference figure above showing CloudWatch dashboard.]
 
-\subsection{Deployment}
+subsection{Deployment}
 
-The application was deployed using a fully serverless architecture within the AWS environment. The deployment integrates 
-API Gateway, AWS Lambda, Amazon S3, and Amazon CloudWatch to provide request handling, image processing, storage, and 
-monitoring capabilities.
+The application was deployed within AWS using the following managed services:
 
-The deployment process consisted of:
-
-[LOUIS OR JUAN: Confirm that these are the actual steps performed during deployment.]
-\begin{enumerate}
-\item Creating the required Amazon S3 buckets.
-\item Implementing and deploying AWS Lambda functions.
-\item Configuring API Gateway endpoints.
-\item Assigning IAM permissions between services.
-\item Configuring CloudWatch monitoring and logging.
-\item Performing functional validation tests.
-\end{enumerate}
+\begin{itemize}
+\item Amazon API Gateway
+\item AWS Lambda
+\item Amazon S3
+\item Amazon CloudWatch
+\end{itemize}
 
 Deployment configuration parameters are summarised in Table \ref{tab:deployment}.
 
@@ -420,14 +536,11 @@ Deployment configuration parameters are summarised in Table \ref{tab:deployment}
 \toprule
 Parameter & Value \\
 \midrule
-AWS Region & [LOUIS: Insert region] \\
-Lambda Runtime & [LOUIS: Insert runtime] \\
-Memory Allocation & [LOUIS: Insert memory size] \\
-Timeout & [LOUIS: Insert timeout value] \\
-API Type & HTTP Request \\
-Storage Service & Amazon S3 \\
-Monitoring Service & Amazon CloudWatch \\
-\bottomrule
+Lambda Runtime & Python 3.11 \\
+Memory Allocation & 128 MB \\
+Timeout & 3 seconds \\
+Region & us-east-1 (US East / N. Virginia) \\
+\bottom rule
 \end{tabular}
 \end{table}
 
@@ -445,15 +558,16 @@ requiring dedicated server infrastructure.
 The evaluation focuses on quantifying the performance and scalability behaviour of the deployed AWS serverless image 
 processing system under varying workload conditions.
 
-The analysis is guided by the following objectives:
+The evaluation focuses on the following metrics:
 
 \begin{itemize}
-\item Measure end-to-end response time under different workload intensities.
-\item Evaluate system throughput as the number of concurrent users increases.
-\item Assess scalability behaviour of AWS Lambda under dynamic load.
-\item Analyse concurrent execution patterns and scaling limits.
-\item Identify error rates and potential system bottlenecks under stress conditions.
+\item Response Time
+\item Throughput
+\item Scalability
+\item Concurrent Executions
+\item Error Rate
 \end{itemize}
+
 
 The evaluation combines both user-oriented and system-oriented metrics in order to provide a complete view of system 
 performance.
@@ -527,27 +641,14 @@ The ramp-down phase gradually reduced the workload to evaluate the system’s ab
 
 Finally, the cool-down phase allowed the system to return to idle conditions and observe recovery behaviour.
 
-The duration of each phase was defined as:
-
-[LUIS: I know we only do this once but we should pretend we did it the whole time. 
-Insert the actual durations used during testing.]
-\begin{itemize}
-    \item Warm-up: [T1 seconds/minutes]
-    \item Ramp-up: [T2 seconds/minutes]
-    \item Steady-state: [T3 seconds/minutes]
-    \item Ramp-down: [T4 seconds/minutes]
-    \item Cool-down: [T5 seconds/minutes]
-\end{itemize}
 
 Figure \ref{fig:workload_profile} illustrates the workload profile
 used during testing.
 
-[EDDIE: Once the durations are done above make a nice looking graph showing the workload profile. The x-axis should be time 
-and the y-axis should be request rate.]
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.85\textwidth]{workload_profile.png}
-\caption{Workload profile used during performance testing showing warm-up, ramp-up, steady-state, ramp-down and cool-down phases.}
+\caption{Workload profile used during performance testing.}
 \label{fig:workload_profile}
 \end{figure}
 
@@ -565,7 +666,7 @@ followed by an immediate return to baseline load conditions.
 
 The burst scenario was defined as:
 
-[LUIS OR JUAN: Confirm the actual request rates used during burst testing.]
+[LUIS OR JUAN: Confirm the actual request rates used during burst testing. We dont need to say small big and large again here but just define the rates]
 \begin{itemize}
     \item Initial load: [A users/requests per second]
     \item Burst peak load: [B users/requests per second]
@@ -653,7 +754,6 @@ The evaluation considers both user-oriented and system-oriented metrics.
     \item Scalability Behaviour (relationship between load and resource allocation)
 \end{itemize}
 
-[LUIS OR JUAN: This correct?]
 Metrics were collected using AWS CloudWatch and Apache JMeter citep{jmeter_docs}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -906,7 +1006,6 @@ metrics are valid and reliable.
 
 \section{Experimental Limitations}
 
-[LUIS OR JUAN OR EDDIE: Maybe also add about the limitations of working in the learner environment]
 [EDDIE: This section could benefit from references]
 This section discusses potential threats to the validity of the experimental results and the factors that may have 
 influenced the observed performance behaviour.
@@ -916,13 +1015,15 @@ influenced the observed performance behaviour.
 Several factors may affect the accuracy of the measured performance metrics:
 
 \begin{itemize}
-    \item Variability in AWS resource allocation (e.g., Lambda cold starts and dynamic resource scheduling) may 
-    introduce non-deterministic execution times.
-    \item Temporary fluctuations in AWS infrastructure performance can affect response time and throughput measurements.
-    \item Differences in execution context across repeated runs may lead to minor inconsistencies in CloudWatch metrics.
+    \item AWS Learner Lab resource limitations.
+    \item Variability in cloud resource allocation.
+    \item Internet latency fluctuations.
+    \item Limited workload intensity imposed by AWS usage policies.
+    \item Limited number of repetitions due to budget constraints.
 \end{itemize}
 
-Although multiple repetitions were performed, residual variability remains inherent to serverless cloud environments.
+Despite these limitations, the collected results provide a representative
+view of the scalability and performance characteristics of the deployment.
 
 \subsection{External Validity}
 
@@ -969,150 +1070,38 @@ This section presents a cost analysis of the proposed AWS serverless architectur
 
 The cost estimation is based on observed experimental workload characteristics and the AWS pricing model at the time of analysis \citep{aws_pricing}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ASSUMPTIONS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Cost Model Assumptions}
 
-The following assumptions were used to estimate operational costs:
+The cost comparison was performed under the same workload assumptions for both deployment alternatives. The estimation used the \texttt{us-east-1} region and assumed a workload of 10,000 requests per month together with a small amount of persistent S3 storage. This allowed a fair comparison between the deployed serverless solution and an equivalent EC2-based alternative providing the same functionality.ere derived from the experimental workload analysis and CloudWatch metrics collected during testing.
 
-\begin{itemize}
-    \item Average number of requests per day: [X requests/day]
-    \item Average image size: [X MB]
-    \item Average Lambda execution time: [X ms]
-    \item Lambda memory allocation: [X MB]
-    \item API Gateway request rate: consistent with experimental workload scenarios
-    \item S3 storage volume: [X GB/month]
-\end{itemize}
+\subsection{Serverless Deployment Cost}
 
-These values were derived from the experimental workload analysis and CloudWatch metrics collected during testing.
+The deployed architecture was based on Amazon API Gateway, AWS Lambda, and Amazon S3. According to the AWS Pricing Calculator estimates produced for this project, the serverless solution has an estimated monthly cost of 0.16 USD, corresponding to 0.96 USD over a 6-month operational period.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% AWS LAMBDA COST ESTIMATION
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Alternative EC2-Based Deployment Cost}
 
-\subsection{AWS Lambda Cost Estimation}
+As a comparison baseline, an alternative deployment was considered using one Amazon EC2 instance, attached block storage, and Amazon S3. This alternative represents a traditional always-on virtual-machine-based architecture capable of providing the same image processing functionality. The estimated monthly cost of this solution is 15.42 USD, corresponding to 92.52 USD over a 6-month operational period.
 
-AWS Lambda pricing is based on the number of requests and execution duration (GB-seconds).
-
-The estimated monthly Lambda cost is computed as:
-
-[LUIS: Is this correct?]
-\[
-Cost_{Lambda} = Requests \times Duration \times Memory \times UnitPrice
-\]
-
-Where:
-
-[LUIS: fill the square brackets with the actual values observed during testing.]
-\begin{itemize}
-    \item Requests = [X requests/month]
-    \item Duration = [X ms converted to seconds]
-    \item Memory = [X MB]
-    \item UnitPrice = AWS Lambda pricing rate
-\end{itemize}
-
-The estimated six-month cost is then:
-
-\[
-Cost_{6months} = 6 \times Cost_{monthly}
-\]
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% COST TABLE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-[LUIS: Fill with outputs of cost analysis]
 \begin{table}[H]
 \centering
-\caption{Estimated Operational Cost over 6 Months}
-\label{tab:cost}
+\caption{Estimated 6-Month Cost Comparison}
+\label{tab:costcomparison}
 \begin{tabular}{lcc}
 \toprule
-Component & Monthly Cost (USD) & 6-Month Cost (USD) \\
+Solution & Monthly Cost (USD) & 6-Month Cost (USD) \\
 \midrule
-AWS Lambda & [\$X] & [\$X] \\
-API Gateway & [\$X] & [\$X] \\
-Amazon S3 Storage & [\$X] & [\$X] \\
-Amazon CloudWatch & [\$X] & [\$X] \\
-\midrule
-\textbf{Total} & \textbf{[\$X]} & \textbf{[\$X]} \\
+Lambda + API Gateway + S3 & 0.16 & 0.96 \\
+EC2 + EBS + S3 & 15.42 & 92.52 \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ALTERNATIVE DEPLOYMENT
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-[LUIS OR JUAN: Is this right? We basically only need an estimate for this we don't need to build anything else]
-\subsection{Alternative Deployment Comparison}
-
-To evaluate cost efficiency, the serverless architecture is compared with an equivalent EC2-based deployment running 
-continuously.
-
-The EC2 instance is assumed to:
-
-\begin{itemize}
-    \item Run 24/7 for six months.
-    \item Host the same image processing application.
-    \item Handle scaling manually or via auto-scaling groups.
-\end{itemize}
-
-The estimated EC2 cost is based on:
-
-\begin{itemize}
-    \item Instance type: [e.g., t3.medium / t3.large]
-    \item Hourly cost: [\$X/hour]
-    \item Monthly runtime: 730 hours
-\end{itemize}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% COMPARISON TABLE
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-[LUIS OR JUAN OR EDDIE: Fill this in once we are happy with above]
-\begin{table}[H]
-\centering
-\caption{Deployment Cost and Performance Comparison}
-\label{tab:comparison}
-\begin{tabular}{lcc}
-\toprule
-Metric & AWS Lambda & EC2 Instance \\
-\midrule
-Estimated 6-Month Cost & [\$X] & [\$Y] \\
-Scalability & Automatic & Manual / Semi-automatic \\
-Idle Cost & Near zero & Continuous billing \\
-Operational Management Effort & Low & Medium / High \\
-Availability & High (managed service) & Depends on configuration \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DISCUSSION
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Discussion}
 
-The results indicate that the serverless architecture provides a cost-efficient solution for workloads with variable d
-emand patterns.
+The cost comparison shows that, under the assumed workload, the serverless architecture is significantly more cost-efficient than the EC2-based alternative. The Lambda-based deployment follows a pay-per-use model, which makes it well suited for workloads that do not require permanently allocated compute capacity. In contrast, the EC2-based alternative requires an always-on virtual machine and persistent storage, leading to a substantially higher fixed operational cost over the same 6-month period.
 
-AWS Lambda significantly reduces idle resource costs, as billing is strictly based on execution time and request volume. 
-This makes it particularly suitable for bursty or unpredictable workloads, as observed in the experimental evaluation.
-
-In contrast, the EC2-based deployment incurs continuous operational costs regardless of workload intensity. 
-While EC2 may offer more predictable performance under sustained high load, it lacks the automatic scaling efficiency 
-and cost elasticity of AWS Lambda.
-
-[LUIS: Fill bracket]
-However, for sustained high-throughput workloads ([INSERT CONDITION IF NEEDED]), EC2 may become more cost-effective 
-due to reduced per-request overhead compared to serverless execution pricing.
-
-Overall, the analysis demonstrates that AWS Lambda is more cost-effective for variable workloads, whereas EC2 may be 
-more suitable for steady-state high-load environments.
-
+Beyond cost, the serverless architecture also reduces management effort because it does not require instance provisioning, patching, or capacity management. The EC2-based alternative may still be appropriate for workloads that are highly predictable and continuous, but for the workload considered in this project, the serverless solution offers a clear economic advantage.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DISCUSSION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
